@@ -1,0 +1,9 @@
+.git
+.gradle
+**/build
+data
+*.parquet
+*.csv
+frontend/node_modules
+frontend/dist
+*.md
