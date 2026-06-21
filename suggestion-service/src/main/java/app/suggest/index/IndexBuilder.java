@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -62,7 +63,18 @@ public class IndexBuilder {
         rebuild();
     }
 
-    public void rebuild() {
+    /**
+     * Periodic rebuild that closes the freshness loop: batch-written counts in Postgres become
+     * visible only when the trie is rebuilt and atomically swapped in. initialDelay == the
+     * interval so this never races the startup build.
+     */
+    @Scheduled(fixedDelayString = "${app.builder.rebuild-interval-ms:45000}",
+               initialDelayString = "${app.builder.rebuild-interval-ms:45000}")
+    public void scheduledRebuild() {
+        rebuild();
+    }
+
+    public synchronized void rebuild() {
         long start = System.nanoTime();
         TrieNode root = new TrieNode();
         int[] count = {0};
