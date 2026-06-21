@@ -77,6 +77,21 @@ services:
       timeout: 5s
       retries: 10
 
+  suggestion-service:
+    build:
+      context: .
+      dockerfile: suggestion-service/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/typeahead
+      SPRING_DATASOURCE_USERNAME: app
+      SPRING_DATASOURCE_PASSWORD: app
+      JDK_JAVA_OPTIONS: -Xmx2g
+    ports:
+      - "8081:8081"
+
   ingestion-service:
     build:
       context: .

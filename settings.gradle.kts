@@ -1,3 +1,3 @@
 rootProject.name = "typeahead"
 
-include("shared", "ingestion-service")
+include("shared", "ingestion-service", "suggestion-service")
