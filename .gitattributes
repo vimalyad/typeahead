@@ -1,0 +1,7 @@
+# Normalize line endings; keep shell scripts and other Unix-run files as LF.
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
+*.sql text eol=lf
+gradlew text eol=lf
+*.bat text eol=crlf
