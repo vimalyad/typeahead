@@ -31,6 +31,8 @@ app:
     vnodes: 150
   cache:
     base-ttl-seconds: 60
+    # Spread expiries so a burst of co-written keys don't all go cold on the same tick (§3.5).
+    jitter-seconds: 15
 
 server:
   port: 8081

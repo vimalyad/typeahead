@@ -10,6 +10,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +20,15 @@ import org.springframework.stereotype.Service;
  * Cache-first read: look up the generation-versioned key on the owning Redis node; on a miss,
  * walk the in-memory trie, write the result back (including empty results — negative caching),
  * and return. The write path never touches Redis; it refreshes lazily on misses.
+ *
+ * <p>Two stampede defenses guard the miss path (IMPLEMENTATION §3.5):
+ * <ul>
+ *   <li><b>Single-flight</b> — concurrent misses on the same key collapse onto one trie load;
+ *       the rest block on its future. Without it, a cold-but-hot prefix would launch one trie
+ *       walk per in-flight request.
+ *   <li><b>TTL jitter</b> — each populate gets a randomized TTL so a burst of keys written
+ *       together don't all expire on the same tick and re-stampede.
+ * </ul>
  */
 @Service
 public class SuggestionService {
@@ -31,20 +43,31 @@ public class SuggestionService {
     private final RedisRouter router;
     private final ObjectMapper mapper;
     private final long ttlSeconds;
+    private final long jitterSeconds;
     private final Counter hits;
     private final Counter misses;
+    private final Counter loads;
+
+    // Keyed by the generation-versioned storage key, so a rebuild (new generation) never lets a
+    // stale in-flight load satisfy a request for the new generation — the keys simply differ.
+    private final ConcurrentHashMap<String, CompletableFuture<List<Suggestion>>> inflight =
+            new ConcurrentHashMap<>();
 
     public SuggestionService(IndexBuilder indexBuilder,
                              RedisRouter router,
                              ObjectMapper mapper,
                              MeterRegistry metrics,
-                             @Value("${app.cache.base-ttl-seconds:60}") long ttlSeconds) {
+                             @Value("${app.cache.base-ttl-seconds:60}") long ttlSeconds,
+                             @Value("${app.cache.jitter-seconds:15}") long jitterSeconds) {
         this.indexBuilder = indexBuilder;
         this.router = router;
         this.mapper = mapper;
         this.ttlSeconds = ttlSeconds;
+        this.jitterSeconds = jitterSeconds;
         this.hits = Counter.builder("suggest.cache.hits").register(metrics);
         this.misses = Counter.builder("suggest.cache.misses").register(metrics);
+        // Actual trie loads. With single-flight, loads << misses under a concurrent cold burst.
+        this.loads = Counter.builder("suggest.trie.loads").register(metrics);
     }
 
     public Result suggest(String normalizedPrefix) {
@@ -61,9 +84,28 @@ public class SuggestionService {
         }
 
         misses.increment();
-        List<Suggestion> result = index.topKFor(normalizedPrefix);
-        router.setEx(normalizedPrefix, storageKey, serialize(result), ttlSeconds);
-        return new Result(result, false);
+        return new Result(loadSingleFlight(storageKey, normalizedPrefix, index), false);
+    }
+
+    private List<Suggestion> loadSingleFlight(String storageKey, String prefix, Index index) {
+        CompletableFuture<List<Suggestion>> future = inflight.computeIfAbsent(storageKey,
+                k -> CompletableFuture.supplyAsync(() -> {
+                    loads.increment();
+                    List<Suggestion> result = index.topKFor(prefix);
+                    router.setEx(prefix, storageKey, serialize(result), ttlWithJitter());
+                    return result;
+                }));
+        try {
+            return future.join();
+        } finally {
+            // Two-arg remove only clears the entry if it still maps to this future, so a fresh
+            // load started after this one completed is never accidentally evicted.
+            inflight.remove(storageKey, future);
+        }
+    }
+
+    private long ttlWithJitter() {
+        return ttlSeconds + ThreadLocalRandom.current().nextLong(jitterSeconds + 1);
     }
 
     private String serialize(List<Suggestion> suggestions) {
