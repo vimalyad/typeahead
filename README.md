@@ -22,9 +22,25 @@ type "iph"  ─▶  iphone 15 pro max case
   (see [Recency & trending](#recency--trending)).
 - **Stampede defenses** — single-flight + TTL jitter + generation-versioned cache keys.
 
-> **Full write-up:** [`REPORT.md`](./REPORT.md) — architecture diagram, dataset, API docs,
-> design trade-offs, and the performance report. Design docs: [`ARCHITECTURE.md`](./ARCHITECTURE.md)
-> and [`STACK.md`](./STACK.md).
+> **Full write-up:** [`REPORT.md`](./docs/REPORT.md) — architecture diagram, dataset, API docs,
+> design trade-offs, and the performance report. Design docs: [`ARCHITECTURE.md`](./docs/ARCHITECTURE.md)
+> and [`STACK.md`](./docs/STACK.md).
+
+---
+
+## Screenshots
+
+**Home** — search box with the recency-blended trending section:
+
+![Home](docs/screenshots/hero.png)
+
+**Typeahead** — debounced suggestions, ranked, with the typed prefix in bold and full keyboard navigation:
+
+![Suggestions](docs/screenshots/suggestions.png)
+
+**Cache routing** — the **Show cache routing** toggle surfaces `GET /api/cache/debug` live: which Redis node owns the prefix (consistent hashing) and whether it's a HIT or MISS:
+
+![Cache routing](docs/screenshots/cache-routing.png)
 
 ---
 
@@ -41,7 +57,7 @@ Browser (React/Vite)
                                                               index-builder reads Postgres at build ───┘
 ```
 
-A rendered diagram and a component-by-component explanation are in [`REPORT.md`](./REPORT.md#1-architecture).
+A rendered diagram and a component-by-component explanation are in [`REPORT.md`](./docs/REPORT.md#1-architecture).
 
 ---
 
@@ -100,7 +116,7 @@ curl -XPOST "http://localhost:8080/api/search" \
 ```
 
 Dataset loading details, tunables (`TOP_N`, `PARQUET_GLOB`), and verification queries are in
-[`REPORT.md` §2](./REPORT.md#2-dataset--source--loading).
+[`REPORT.md` §2](./docs/REPORT.md#2-dataset--source--loading).
 
 ---
 
@@ -190,7 +206,7 @@ tune the balance with `app.index.weights.recent` (raise it to make trending more
 | `POST` | `/api/search` | Body `{"query":"…"}` → `{"message":"Searched"}`; enqueues for batched counting. |
 | `GET` | `/actuator/prometheus` | Micrometer metrics (per :8081 / :8082). |
 
-Full request/response shapes and examples: [`REPORT.md` §3](./REPORT.md#3-api-documentation).
+Full request/response shapes and examples: [`REPORT.md` §3](./docs/REPORT.md#3-api-documentation).
 
 ---
 
@@ -223,7 +239,7 @@ by hit/miss. Captured results: [`load-test/RESULTS.md`](./load-test/RESULTS.md).
 
 | Doc | Contents |
 | --- | -------- |
-| [`REPORT.md`](./REPORT.md) | Consolidated report: architecture diagram, dataset, API, trade-offs, performance |
-| [`ARCHITECTURE.md`](./ARCHITECTURE.md) | System design — the *what* and *why* |
-| [`STACK.md`](./STACK.md) | Technology choices and rationale |
+| [`REPORT.md`](./docs/REPORT.md) | Consolidated report: architecture diagram, dataset, API, trade-offs, performance |
+| [`ARCHITECTURE.md`](./docs/ARCHITECTURE.md) | System design — the *what* and *why* |
+| [`STACK.md`](./docs/STACK.md) | Technology choices and rationale |
 | [`load-test/RESULTS.md`](./load-test/RESULTS.md) | Measured performance numbers |
