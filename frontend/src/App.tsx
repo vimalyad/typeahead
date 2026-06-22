@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { submitSearch } from "./api";
+import { CacheInspector } from "./components/CacheInspector";
 import { SearchTypeahead } from "./components/SearchTypeahead";
 import { Toast } from "./components/Toast";
 import { Trending } from "./components/Trending";
@@ -13,6 +14,7 @@ interface ToastState {
 export default function App() {
   const [query, setQuery] = useState("");
   const [toast, setToast] = useState<ToastState | null>(null);
+  const [showCache, setShowCache] = useState(false);
 
   const submit = useCallback(async (raw: string) => {
     const q = raw.trim();
@@ -45,6 +47,23 @@ export default function App() {
       </header>
 
       <SearchTypeahead query={query} onQueryChange={setQuery} onSubmit={(q) => void submit(q)} />
+
+      <div className="mt-3 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setShowCache((v) => !v)}
+          className="text-xs font-medium text-ink-faint transition hover:text-accent"
+          aria-pressed={showCache}
+        >
+          {showCache ? "Hide" : "Show"} cache routing
+        </button>
+      </div>
+
+      {showCache && (
+        <div className="mt-1">
+          <CacheInspector prefix={query} />
+        </div>
+      )}
 
       <Trending onPick={pickTrending} />
 

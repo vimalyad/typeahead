@@ -24,6 +24,23 @@ export async function fetchTrending(signal?: AbortSignal): Promise<Suggestion[]>
   return (await res.json()) as Suggestion[];
 }
 
+export interface CacheDebug {
+  prefix: string;
+  generation: number;
+  key: string;
+  ownerNode: string;
+  status: "HIT" | "MISS";
+}
+
+/** Which Redis node owns this prefix on the consistent-hash ring, and whether it's cached. */
+export async function fetchCacheDebug(prefix: string, signal?: AbortSignal): Promise<CacheDebug> {
+  const res = await fetch(`/api/cache/debug?prefix=${encodeURIComponent(prefix)}`, { signal });
+  if (!res.ok) {
+    throw new Error(`cache debug failed: ${res.status}`);
+  }
+  return (await res.json()) as CacheDebug;
+}
+
 export async function submitSearch(query: string): Promise<string> {
   const res = await fetch("/api/search", {
     method: "POST",

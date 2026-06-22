@@ -376,7 +376,25 @@ absorbs).
 `jitter-seconds` (miss smoothing) · `builder.rebuild-interval-ms` (freshness vs build cost) ·
 `ring.vnodes` (key-distribution evenness) · `index.max-queries` (trie size vs memory/build time).
 
-> Full results and the reproduce command are in [`load-test/RESULTS.md`](./load-test/RESULTS.md).
+> Full results and the reproduce command are in [`load-test/RESULTS.md`](../load-test/RESULTS.md).
+
+---
+
+## UI screenshots
+
+The frontend (single origin via nginx) consuming the APIs above.
+
+**Home** — search box with the recency-blended trending section:
+
+![Home screen](screenshots/hero.png)
+
+**Typeahead** — debounced, ranked suggestions with the typed prefix bolded and full keyboard navigation:
+
+![Suggestions dropdown](screenshots/suggestions.png)
+
+**Cache routing** — the *Show cache routing* panel surfaces `GET /api/cache/debug` live: the owning Redis node for the prefix (consistent hashing) and whether it is a HIT or MISS:
+
+![Cache routing panel](screenshots/cache-routing.png)
 
 ---
 
