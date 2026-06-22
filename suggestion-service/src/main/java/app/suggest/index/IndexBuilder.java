@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
  * Builds the read-optimized trie from Postgres and publishes it via an atomic reference.
  * Two passes: insert every query (score baked in), then a post-order DFS where each node
  * merges its children's top-K lists plus its own terminal into its own top-K. Carrying K per
- * child is sufficient — see the merge invariant in IMPLEMENTATION §3.2.
+ * child is sufficient: a node's true top-K is a subset of the union of its children's top-K.
  */
 @Component
 public class IndexBuilder {

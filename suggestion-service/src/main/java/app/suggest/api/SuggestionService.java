@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
  * walk the in-memory trie, write the result back (including empty results — negative caching),
  * and return. The write path never touches Redis; it refreshes lazily on misses.
  *
- * <p>Two stampede defenses guard the miss path (IMPLEMENTATION §3.5):
+ * <p>Two stampede defenses guard the miss path:
  * <ul>
  *   <li><b>Single-flight</b> — concurrent misses on the same key collapse onto one trie load;
  *       the rest block on its future. Without it, a cold-but-hot prefix would launch one trie

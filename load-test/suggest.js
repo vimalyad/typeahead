@@ -54,7 +54,7 @@ export const options = {
     },
   },
   thresholds: {
-    // Targets from IMPLEMENTATION §5.3 (measure against the service for the tightest read).
+    // Latency targets (measure against the service for the tightest read).
     "http_req_duration{kind:suggest}": ["p(95)<25", "p(99)<60"],
     cache_hit: ["rate>0.80"],
     checks: ["rate>0.99"],
