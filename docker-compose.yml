@@ -116,6 +116,16 @@ services:
     ports:
       - "8082:8082"
 
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    depends_on:
+      - suggestion-service
+      - ingestion-service
+    ports:
+      - "8080:80"
+
 volumes:
   pgdata:
   kafka-data:

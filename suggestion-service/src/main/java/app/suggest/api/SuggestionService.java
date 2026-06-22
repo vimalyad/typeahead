@@ -87,6 +87,14 @@ public class SuggestionService {
         return new Result(loadSingleFlight(storageKey, normalizedPrefix, index), false);
     }
 
+    /**
+     * Trending = the global top-K, which lives at the trie root (the empty prefix). It goes through
+     * the same cache-first path as any prefix, so the hottest key of all stays warm and single-flighted.
+     */
+    public Result trending() {
+        return suggest("");
+    }
+
     private List<Suggestion> loadSingleFlight(String storageKey, String prefix, Index index) {
         CompletableFuture<List<Suggestion>> future = inflight.computeIfAbsent(storageKey,
                 k -> CompletableFuture.supplyAsync(() -> {
