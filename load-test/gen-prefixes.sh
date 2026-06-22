@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Emits load-test/prefixes.json: 2-3 character prefixes weighted by query popularity,
 # so a few hot prefixes dominate — the Zipfian skew the load test needs to exercise the
-# cache hot path (ARCHITECTURE §4.3, IMPLEMENTATION §5.3). Run after the dataset is loaded.
+# cache hot path (ARCHITECTURE §4.3). Run after the dataset is loaded.
 set -euo pipefail
 
 DB_CONTAINER="${DB_CONTAINER:-typeahead-postgres-1}"

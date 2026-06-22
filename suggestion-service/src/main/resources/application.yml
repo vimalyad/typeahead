@@ -14,7 +14,7 @@ spring:
 app:
   index:
     # In-memory trie size. Default keeps the HashMap-per-node trie within a ~2g heap; raise
-    # toward the full dataset if the host has the RAM (see STACK/IMPLEMENTATION notes).
+    # toward the full dataset if the host has the RAM (see STACK notes).
     max-queries: 300000
     max-suggestions: 10
     weights:
