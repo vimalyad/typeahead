@@ -46,3 +46,6 @@ Thumbs.db
 pgdata/
 redis-data/
 kafka-data/
+
+# TypeScript incremental build info
+*.tsbuildinfo

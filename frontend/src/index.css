@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, #ffffff 0%, #f6f4f1 55%, #efece7 100%);
+  color: theme(colors.ink.DEFAULT);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Highlighted query fragments in suggestions */
+mark {
+  background: transparent;
+  color: inherit;
+  font-weight: 600;
+}
