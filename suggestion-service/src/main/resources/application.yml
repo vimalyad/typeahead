@@ -42,3 +42,10 @@ management:
     web:
       exposure:
         include: health,info,metrics,prometheus
+  metrics:
+    distribution:
+      # Server-side suggest latency, split by cache outcome (ARCHITECTURE §10).
+      percentiles-histogram:
+        suggest.request: true
+      percentiles:
+        suggest.request: 0.5, 0.95, 0.99
