@@ -1,10 +1,9 @@
 package app.suggest.api;
 
 import app.shared.Suggestion;
-import app.suggest.index.Index;
-import app.suggest.index.IndexBuilder;
 import java.util.List;
 import java.util.Locale;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,21 +11,21 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class SuggestController {
 
-    private final IndexBuilder indexBuilder;
+    private final SuggestionService suggestionService;
 
-    public SuggestController(IndexBuilder indexBuilder) {
-        this.indexBuilder = indexBuilder;
+    public SuggestController(SuggestionService suggestionService) {
+        this.suggestionService = suggestionService;
     }
 
     @GetMapping("/api/suggest")
-    public List<Suggestion> suggest(@RequestParam(name = "q", required = false) String q) {
+    public ResponseEntity<List<Suggestion>> suggest(
+            @RequestParam(name = "q", required = false) String q) {
         if (q == null || q.isBlank()) {
-            return List.of();
+            return ResponseEntity.ok().header("X-Cache", "BYPASS").body(List.of());
         }
-        Index index = indexBuilder.live();
-        if (index == null) {
-            return List.of();
-        }
-        return index.topKFor(q.strip().toLowerCase(Locale.ROOT));
+        var result = suggestionService.suggest(q.strip().toLowerCase(Locale.ROOT));
+        return ResponseEntity.ok()
+                .header("X-Cache", result.cacheHit() ? "HIT" : "MISS")
+                .body(result.suggestions());
     }
 }

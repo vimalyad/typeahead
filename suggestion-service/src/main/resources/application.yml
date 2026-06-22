@@ -23,6 +23,14 @@ app:
   builder:
     # Timed trie rebuild cadence (30-60s bounds staleness predictably).
     rebuild-interval-ms: 45000
+  redis:
+    nodes: ${APP_REDIS_NODES:redis-1:6379,redis-2:6379,redis-3:6379}
+    command-timeout-ms: 2000
+    liveness-interval-ms: 5000
+  ring:
+    vnodes: 150
+  cache:
+    base-ttl-seconds: 60
 
 server:
   port: 8081
