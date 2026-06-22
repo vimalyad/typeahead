@@ -84,6 +84,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis-1:
+        condition: service_healthy
+      redis-2:
+        condition: service_healthy
+      redis-3:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/typeahead
       SPRING_DATASOURCE_USERNAME: app
