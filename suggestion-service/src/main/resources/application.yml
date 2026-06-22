@@ -20,6 +20,9 @@ app:
     weights:
       all-time: 1.0
       recent: 1.0
+  builder:
+    # Timed trie rebuild cadence (30-60s bounds staleness predictably).
+    rebuild-interval-ms: 45000
 
 server:
   port: 8081
